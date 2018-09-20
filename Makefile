@@ -1,0 +1,2 @@
+main:
+	python run.py

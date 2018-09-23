@@ -34,12 +34,18 @@ class Server:
     def handleConnection(self, clientSocket, clientAddress):
         print(f'connection from {clientAddress}')
         # receive from client into request object
-        request = self.receiveService.receive(clientSocket)
-        print(request)
+        # import pudb; pudb.set_trace()
+        requestDetails = self.receiveService.receive(clientSocket)
+        targetSocket = (self.sendService.convertToTls(clientSocket, requestDetails)
+                        if requestDetails.form == 'authority'
+                        else clientSocket)
         # send request object to remote and receive into response object
+        response = self.sendService.sendToRemote(requestDetails)
         # send response object to client
+        sent = self.sendService.sendToClient(targetSocket, response)
+        print(f'Sent {sent} bytes')
         # close connection
-        self.closeSocket(clientSocket)
+        self.closeSocket(targetSocket)
 
     def closeSocket(self, sock):
         try:

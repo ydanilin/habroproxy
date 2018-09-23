@@ -1,9 +1,13 @@
 import os
 import socket
 import select
+from read import readRequestLine, readHeaders
+from message import RequestDetails
+
 
 def getLinesep():
-    return b'\r\n' if os.name == "nt" else b'\n'
+    # must be always CRLF?
+    return b'\r\n'  # if os.name == "nt" else b'\n'
 
 def read(sock, pollInterval):
     rawMessage = b''
@@ -23,12 +27,12 @@ def read(sock, pollInterval):
 class ReceiveService:
 
     def receive(self, sock, pollInterval=0.1):
-        # import pdb; pdb.set_trace()
         rawMessage = read(sock, pollInterval)
         lsep = getLinesep()
-        head, body = rawMessage.split(lsep + lsep, maxsplit=1)
-        headList = head.split(lsep)
-        fline = headList[0]
-        headers = headList[1:]
-        return fline, headers
-
+        request, body = rawMessage.split(lsep + lsep, maxsplit=1)
+        head, *tail = request.split(lsep)
+        form, method, scheme, host, port, path, http_version = readRequestLine(head)
+        headers = readHeaders(tail)
+        return RequestDetails(
+            form, method, scheme, host, port, path, http_version, headers, body
+            )

@@ -34,11 +34,13 @@ class Server:
     def handleConnection(self, clientSocket, clientAddress):
         print(f'connection from {clientAddress}')
         # receive from client into request object
-        # import pudb; pudb.set_trace()
+        # import pdb; pdb.set_trace()
         requestDetails = self.receiveService.receive(clientSocket)
         targetSocket = (self.sendService.convertToTls(clientSocket, requestDetails)
                         if requestDetails.form == 'authority'
                         else clientSocket)
+        # try to receive tls (to refactor)
+        # sec = self.receiveService.receive(targetSocket)
         # send request object to remote and receive into response object
         response = self.sendService.sendToRemote(requestDetails)
         # send response object to client

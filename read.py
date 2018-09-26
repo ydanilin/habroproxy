@@ -20,20 +20,43 @@ def parse(path):
 
 
 def readRequestLine(line):
+    """
+    return form, method, scheme, host, port, path, http_version
+    """
     method, path, http_version = line.split()
 
     if path == b"*" or path.startswith(b"/"):
-        form = "relative"
-        scheme, host, port = None, None, None
+        return dict(
+            form='relative',
+            method=method,
+            scheme=None,
+            host=None,
+            port=None,
+            path=path,
+            http_version=http_version
+            )
     elif method == b"CONNECT":
-        form = "authority"
-        host, port = path.rsplit(b":", 1)
-        scheme, path = None, None
+        host, *port = path.rsplit(b":", 1)
+        return dict(
+            form='authority',
+            method=method,
+            scheme=None,
+            host=host,
+            port=port if port else 443,
+            path=None,
+            http_version=http_version
+            )
     else:
-        form = "absolute"
         scheme, host, port, path = parse(path)
-
-    return form, method, scheme, host, port, path, http_version
+        return dict(
+            form='absolute',
+            method=method,
+            scheme=scheme,
+            host=host,
+            port=port,
+            path=path,
+            http_version=http_version
+            )
 
 
 def readHeaders(hlist):

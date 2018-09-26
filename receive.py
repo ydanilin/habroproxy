@@ -29,10 +29,9 @@ class ReceiveService:
     def receive(self, sock, pollInterval=0.1):
         rawMessage = read(sock, pollInterval)
         lsep = getLinesep()
+        print(rawMessage)
         request, body = rawMessage.split(lsep + lsep, maxsplit=1)
         head, *tail = request.split(lsep)
-        form, method, scheme, host, port, path, http_version = readRequestLine(head)
+        requestLineDict = readRequestLine(head)
         headers = readHeaders(tail)
-        return RequestDetails(
-            form, method, scheme, host, port, path, http_version, headers, body
-            )
+        return RequestDetails(requestLineDict, headers, body)

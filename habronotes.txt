@@ -1,0 +1,22 @@
+
+capture local interface on windows:
+https://www.netresec.com/index.ashx?page=RawCap
+command-line utility
+after capture, do Ctrl+C
+open pcap file in Wireshark
+
+
+test proxies via OpenSSL:
+(https://stackoverflow.com/questions/3220419/openssl-s-client-using-a-proxy)
+Need version 1.1.0+. For windows, installed like described here:
+https://www.cloudinsidr.com/content/how-to-install-the-most-recent-version-of-openssl-on-windows-10-in-64-bit/
+They recommend not to install in Program Files, perhaps it is linked with spaces in paths.
+C:\tp\OpenSSL-Win64
+
+openssl s_client -proxy localhost:8080 -connect www.google.com -CAfile C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
+C:\tp\OpenSSL-Win64\bin\openssl s_client -proxy localhost:8080 -connect www.google.com -CAfile C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
+
+
+Test connection works:
+http://openssl.6102.n7.nabble.com/quot-no-shared-cipher-quot-td14216.html
+

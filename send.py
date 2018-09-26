@@ -49,14 +49,21 @@ class SendService:
         return sock.send(httpText)
 
     def convertToTls(self, sock, connRequest):
-        import pudb; pudb.set_trace()
+        # import pdb; pdb.set_trace()
         text = b'%s %d %s\r\n\r\n' % (
-            connRequest._http_version, 200, b'Connection established')
+            connRequest.http_version.encode(), 200, b'Connection established')
         sock.sendall(text)
-        msg = read(sock, 0.1)
+        # msg = read(sock, 0.1) maybe this is wrong?
         # https://stackoverflow.com/questions/4393086/https-proxy-tunneling-with-the-ssl-module
-        ctx = ssl.create_default_context(capath='/home/yury/dev/pitonizm/habroproxy/cert')
-        ss = SSL.Connection(ctx, sock)
+        # ctx = ssl.create_default_context(capath='/home/yury/dev/pitonizm/habroproxy/cert')
+        # ss = SSL.Connection(ctx, sock)
+        # ss.do_handshake()
+        context = SSL.Context(3)
+        context.set_mode(SSL._lib.SSL_MODE_AUTO_RETRY)
+        context.load_verify_locations('./cert/server.pem', None)
+        context.use_privatekey_file('./cert/server.key')
+        ss = SSL.Connection(context, sock)
+        ss.set_accept_state()
         ss.do_handshake()
-        puk = 1
+        return ss
         

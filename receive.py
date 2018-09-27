@@ -30,7 +30,7 @@ class ReceiveService:
         rawMessage = read(sock, pollInterval)
         lsep = getLinesep()
         print(rawMessage)
-        request, body = rawMessage.split(lsep + lsep, maxsplit=1)
+        request, *body = rawMessage.split(lsep + lsep, maxsplit=1)
         head, *tail = request.split(lsep)
         requestLineDict = readRequestLine(head)
         headers = readHeaders(tail)

@@ -1,3 +1,4 @@
+import os
 import requests
 import select
 import ssl
@@ -53,16 +54,14 @@ class SendService:
         text = b'%s %d %s\r\n\r\n' % (
             connRequest.http_version.encode(), 200, b'Connection established')
         sock.sendall(text)
-        # msg = read(sock, 0.1) maybe this is wrong?
-        # https://stackoverflow.com/questions/4393086/https-proxy-tunneling-with-the-ssl-module
-        # ctx = ssl.create_default_context(capath='/home/yury/dev/pitonizm/habroproxy/cert')
-        # ss = SSL.Connection(ctx, sock)
-        # ss.do_handshake()
-        context = SSL.Context(3)
-        context.set_mode(SSL._lib.SSL_MODE_AUTO_RETRY)
-        context.load_verify_locations('./cert/server.pem', None)
-        context.use_privatekey_file('./cert/server.key')
-        ss = SSL.Connection(context, sock)
+        ctx = SSL.Context(SSL.SSLv23_METHOD)
+        
+        ctx.set_options(SSL.OP_NO_SSLv2)
+        ctx.set_options(SSL.OP_NO_SSLv3)
+        ctx.use_privatekey_file(os.path.join(os.curdir, 'cert', 'server.key'))
+        ctx.use_certificate_file(os.path.join(os.curdir, 'cert', 'server.pem'))
+
+        ss = SSL.Connection(ctx, sock)
         ss.set_accept_state()
         ss.do_handshake()
         return ss

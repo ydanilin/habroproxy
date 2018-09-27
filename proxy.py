@@ -42,12 +42,17 @@ class Server:
         # try to receive tls (to refactor)
         # sec = self.receiveService.receive(targetSocket)
         # send request object to remote and receive into response object
-        response = self.sendService.sendToRemote(requestDetails)
+
+        # response = self.sendService.sendToRemote(requestDetails)
+        
         # send response object to client
-        sent = self.sendService.sendToClient(targetSocket, response)
-        print(f'Sent {sent} bytes')
+        
+        # sent = self.sendService.sendToClient(targetSocket, response)
+        # print(f'Sent {sent} bytes')
+        
         # close connection
-        self.closeSocket(targetSocket)
+        # self.closeSocket(targetSocket)
+        targetSocket.close()
 
     def closeSocket(self, sock):
         try:

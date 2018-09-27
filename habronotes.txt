@@ -20,3 +20,13 @@ C:\tp\OpenSSL-Win64\bin\openssl s_client -proxy localhost:8080 -connect www.goog
 Test connection works:
 http://openssl.6102.n7.nabble.com/quot-no-shared-cipher-quot-td14216.html
 
+openssl s_server -key C:\tp\docs\G\Pitonizm\habroproxy\cert\server.key -cert C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
+openssl s_client -CAfile C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
+
+
+If TLS protocol does not appear in WIreshark:
+Edit -> Preferences -> Protocols -> HTTP -> SSL/TLS Ports
+change line to:
+Change it to: 443,<your proxy port>
+Because by default Wireshark shows TLS only for standard 443 port
+

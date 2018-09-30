@@ -36,17 +36,15 @@ class Server:
         # receive from client into request object
         # import pdb; pdb.set_trace()
         requestDetails = self.receiveService.receive(clientSocket)
-        targetSocket = (self.sendService.convertToTls(clientSocket, requestDetails)
-                        if requestDetails.form == 'authority'
-                        else clientSocket)
-        # try to receive tls (to refactor)
-        # sec = self.receiveService.receive(targetSocket)
+        if requestDetails.form == 'authority':
+            targetSocket = self.sendService.convertToTls(clientSocket, requestDetails)
+            # requestDetails = self.receiveService.receive(targetSocket)
+        else:
+            targetSocket = clientSocket
         # send request object to remote and receive into response object
-
         # response = self.sendService.sendToRemote(requestDetails)
         
         # send response object to client
-        
         # sent = self.sendService.sendToClient(targetSocket, response)
         # print(f'Sent {sent} bytes')
         

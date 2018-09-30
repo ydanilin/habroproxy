@@ -50,14 +50,25 @@ class SendService:
         return sock.send(httpText)
 
     def convertToTls(self, sock, connRequest):
-        # import pdb; pdb.set_trace()
+        def accept_all(
+            conn_: SSL.Connection,
+            x509: SSL.X509,
+            errno: int,
+            err_depth: int,
+            is_cert_verified: bool):
+                # Return true to prevent cert verification error
+                return True
+
         text = b'%s %d %s\r\n\r\n' % (
             connRequest.http_version.encode(), 200, b'Connection established')
         sock.sendall(text)
         ctx = SSL.Context(SSL.SSLv23_METHOD)
-        
-        ctx.set_options(SSL.OP_NO_SSLv2)
-        ctx.set_options(SSL.OP_NO_SSLv3)
+        ctx.set_verify(0, accept_all)
+        # do we need this? what is locations file?
+        ctx.load_verify_locations(os.path.join(os.curdir, 'cert', 'server.pem'))
+        ctx.set_mode(SSL._lib.SSL_MODE_AUTO_RETRY)
+        # ctx.set_options(SSL.OP_NO_SSLv2)
+        # ctx.set_options(SSL.OP_NO_SSLv3)
         ctx.use_privatekey_file(os.path.join(os.curdir, 'cert', 'server.key'))
         ctx.use_certificate_file(os.path.join(os.curdir, 'cert', 'server.pem'))
 

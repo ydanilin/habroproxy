@@ -1,12 +1,12 @@
 
-capture local interface on windows:
+********************* capture local interface traffic on windows:
 https://www.netresec.com/index.ashx?page=RawCap
 command-line utility
 after capture, do Ctrl+C
 open pcap file in Wireshark
 
 
-test proxies via OpenSSL:
+********************* test proxies via OpenSSL:
 (https://stackoverflow.com/questions/3220419/openssl-s-client-using-a-proxy)
 Need version 1.1.0+. For windows, installed like described here:
 https://www.cloudinsidr.com/content/how-to-install-the-most-recent-version-of-openssl-on-windows-10-in-64-bit/
@@ -15,18 +15,27 @@ C:\tp\OpenSSL-Win64
 
 openssl s_client -proxy localhost:8080 -connect www.google.com -CAfile C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
 C:\tp\OpenSSL-Win64\bin\openssl s_client -proxy localhost:8080 -connect www.google.com -CAfile C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
+ubuntu:
+(note that there are two openssls :-) - one in miniconda distribution and other one in /usr/bin
+/usr/bin/openssl s_client -proxy localhost:8080 -connect www.google.com -CAfile /home/yury/dev/pitonizm/habroproxy/cert/server.pem
 
 
-Test connection works:
+********************* Test bare connection works:
 http://openssl.6102.n7.nabble.com/quot-no-shared-cipher-quot-td14216.html
 
 openssl s_server -key C:\tp\docs\G\Pitonizm\habroproxy\cert\server.key -cert C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
 openssl s_client -CAfile C:\tp\docs\G\Pitonizm\habroproxy\cert\server.pem
 
 
+********************* TLS traffic in Wireshark
 If TLS protocol does not appear in WIreshark:
 Edit -> Preferences -> Protocols -> HTTP -> SSL/TLS Ports
 change line to:
 Change it to: 443,<your proxy port>
 Because by default Wireshark shows TLS only for standard 443 port
+
+
+********************** See certificate contents
+openssl x509 -text -in <certfilename> -noout
+openssl x509 -text -in mitmproxy-ca.pem -noout
 

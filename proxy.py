@@ -32,13 +32,14 @@ class Server:
                 self.closeSocket(self.socket)
 
     def handleConnection(self, clientSocket, clientAddress):
+        # dialog = createDialog(clientAddess)
         print(f'connection from {clientAddress}')
         # receive from client into request object
         # import pdb; pdb.set_trace()
         requestDetails = self.receiveService.receive(clientSocket)
         if requestDetails.form == 'authority':
             targetSocket = self.sendService.convertToTls(clientSocket, requestDetails)
-            # requestDetails = self.receiveService.receive(targetSocket)
+            requestDetails = self.receiveService.receive(targetSocket)
         else:
             targetSocket = clientSocket
         # send request object to remote and receive into response object

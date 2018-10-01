@@ -39,3 +39,7 @@ Because by default Wireshark shows TLS only for standard 443 port
 openssl x509 -text -in <certfilename> -noout
 openssl x509 -text -in mitmproxy-ca.pem -noout
 
+
+*********************** test mitmproxy windows
+C:\tp\OpenSSL-Win64\bin\openssl s_client -proxy localhost:8080 -connect www.google.com:443 -CAfile C:\Users\danilin\.mitmproxy\mitmproxy-ca-cert.pem
+

@@ -3,6 +3,7 @@ import requests
 import select
 import ssl
 from OpenSSL import SSL
+from certs import CertificateService
 
 
 def read(sock, pollInterval):
@@ -62,18 +63,27 @@ class SendService:
         text = b'%s %d %s\r\n\r\n' % (
             connRequest.http_version.encode(), 200, b'Connection established')
         sock.sendall(text)
+
+        certService = CertificateService()
+
         ctx = SSL.Context(SSL.SSLv23_METHOD)
+        # ctx = SSL.Context(SSL.TLSv1_2_METHOD)
         ctx.set_verify(0, accept_all)
         # do we need this? what is locations file?
-        ctx.load_verify_locations(os.path.join(os.curdir, 'cert', 'server.pem'))
+        ctx.load_verify_locations(certService.caFile)
         ctx.set_mode(SSL._lib.SSL_MODE_AUTO_RETRY)
         # ctx.set_options(SSL.OP_NO_SSLv2)
         # ctx.set_options(SSL.OP_NO_SSLv3)
-        ctx.use_privatekey_file(os.path.join(os.curdir, 'cert', 'server.key'))
-        ctx.use_certificate_file(os.path.join(os.curdir, 'cert', 'server.pem'))
+        cert, key = certService.makeDomainCert('habr.com')
+        ctx.use_privatekey(key)
+        ctx.use_certificate(cert)
+        SSL._lib.SSL_CTX_set_tmp_dh(ctx._context, certService.DHParam)
 
         ss = SSL.Connection(ctx, sock)
         ss.set_accept_state()
-        ss.do_handshake()
+        try:
+            ss.do_handshake()
+        except SSL.Error as v:
+            print("SSL handshake error: %s" % repr(v))
         return ss
         

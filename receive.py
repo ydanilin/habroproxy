@@ -18,7 +18,7 @@ def read(sock, pollInterval):
                 chunk = sock.recv(1024)
                 rawMessage += chunk
             except socket.error:
-                break
+                break  # TODO construct exeption
         else:
             break
     return rawMessage

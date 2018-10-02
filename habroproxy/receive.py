@@ -1,8 +1,8 @@
 import os
 import socket
 import select
-from read import readRequestLine, readHeaders
-from message import RequestDetails
+from .read import readRequestLine, readHeaders
+from .message import RequestDetails
 
 
 def getLinesep():

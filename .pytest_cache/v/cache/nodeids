@@ -1,0 +1,9 @@
+[
+  "habroproxy/test/test_dialog_service.py::test_get_dialog_by_host",
+  "habroproxy/test/test_request.py::test_create_connect",
+  "habroproxy/test/test_request.py::test_create_relative",
+  "habroproxy/test/test_request.py::test_create_absolute",
+  "habroproxy/test/test_tls.py::test_domain_cert",
+  "habroproxy/test/test_tls.py::test_ssl_context",
+  "habroproxy/test/test_utils.py::test_cert_path"
+]

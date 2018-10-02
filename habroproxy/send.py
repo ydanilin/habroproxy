@@ -3,7 +3,7 @@ import requests
 import select
 import ssl
 from OpenSSL import SSL
-from certs import CertificateService
+from .certs import CertificateService
 
 
 def read(sock, pollInterval):

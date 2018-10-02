@@ -4,6 +4,8 @@ clnt:
 	python client.py
 gencert:
 	python gencert.py
+test:
+	pytest
 t:
 	/usr/bin/openssl s_client -proxy localhost:8080 -connect www.google.com -CAfile /home/yury/dev/pitonizm/habroproxy/cert/server.pem
 tw:

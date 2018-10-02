@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import OpenSSL
 
 
@@ -17,10 +16,11 @@ def loadDhparam(path):
         return dh
 
 
-class CertificateService:
-    def __init__(self):
+class CertificateAgency:
+    def __init__(self, caPath):
         self.basename = 'habroproxy'
-        self.caPath = os.path.join(os.curdir, 'cert')
+        # self.caPath = os.path.join(os.curdir, 'cert')
+        self.caPath = caPath
         self.caFile = os.path.join(self.caPath, self.basename + '-ca.pem')
         with open(self.caFile, "rb") as f:
             raw = f.read()
@@ -31,14 +31,3 @@ class CertificateService:
             OpenSSL.crypto.FILETYPE_PEM,
             raw)
         self.DHParam = loadDhparam(os.path.join(self.caPath, self.basename + '-dhparam.pem'))
-
-    def makeDomainCert(self, forDomain):
-        cert = OpenSSL.crypto.X509()
-        cert.gmtime_adj_notBefore(-3600 * 48)
-        cert.gmtime_adj_notAfter(63072000)  # 2 years ))
-        cert.set_issuer(self.cacert.get_subject())
-        cert.get_subject().CN = forDomain
-        cert.set_serial_number(int(time.time() * 10000))
-        cert.set_pubkey(self.cacert.get_pubkey())
-        cert.sign(self.privKey, "sha256")
-        return cert, self.privKey

@@ -21,15 +21,33 @@ class DialogService:
 
     def getDialogByHost(self, hostName):
         result = list(filter(lambda x: x[1].remoteHost.decode() == hostName, self.dialogRepository.items()))
-        return result if result else None
+        return result[0] if result else None
+
+    def getLastMessage(self, dialogId):
+        msgRepo = self.dialogRepository[dialogId].conversation
+        return msgRepo[-1] if msgRepo else None
 
     def makeRequestFromRaw(self, raw, dialogId):
         request = self.requestClass.createFromRaw(raw)
         self.dialogRepository[dialogId].conversation.append(request)
         return request
 
+    def preparePyRequestArgs(self, request, dialogId):
+        # TODO refactor in a way that dialog class grabs scheme, host, port asap from conversation flow
+        if request.form == 'relative':
+            pass
+        t = f'{self.scheme}://{self.host}:{self.port}{self.path}'
+        pass
+        # return method, url, kwargs
+        # headers dict, stream=True
+
+    def createPyResponseFormat(self):
+        pass
+
     def makeResponseFromRaw(self, raw, dialogId):
         pass
 
     def makeEstablishedResponse(self, dialogId):
-        pass
+        req = self.getLastMessage(dialogId)
+        return b'%s %d %s\r\n\r\n' % (
+            req.http_version, 200, b'Connection established')

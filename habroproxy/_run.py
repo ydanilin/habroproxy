@@ -1,8 +1,13 @@
+from .model.dialog import Dialog
+from .model.request import Request
+from .services.dialog import DialogService
+from .services.tls import TlsService
 from .proxy import Server
-from .receive import ReceiveService
-from .send import SendService
+
 
 def run():
-    server = Server(('', 8080), SendService(), ReceiveService())
+    dialogService = DialogService(Dialog, Request)
+    tlsService = TlsService()
+    server = Server(('', 8080), dialogService, tlsService)
     server.start()
     server.serveForever()

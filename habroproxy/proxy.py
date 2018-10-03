@@ -2,14 +2,16 @@ import os
 import socket
 import select
 import threading
+from OpenSSL import SSL
 
 
 class Server:
-    def __init__(self, address, sendService, receiveService):
+    def __init__(self, address, dialogService, tlsService):
         self.address = address
-        self.sendService = sendService
-        self.receiveService = receiveService
+        self.dialogService = dialogService
+        self.tlsService = tlsService
         self.socket = None
+        self.pollInterval = 0.1
 
     def start(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,17 +34,33 @@ class Server:
                 self.closeSocket(self.socket)
 
     def handleConnection(self, clientSocket, clientAddress):
-        # dialog = createDialog(clientAddess)
         print(f'connection from {clientAddress}')
-        # receive from client into request object
-        # import pdb; pdb.set_trace()
-        requestDetails = self.receiveService.receive(clientSocket)
-        if requestDetails.form == 'authority':
-            targetSocket = self.sendService.convertToTls(clientSocket, requestDetails)
-            requestDetails = self.receiveService.receive(targetSocket)
+        rawMessage = self.read(clientSocket)
+        print(rawMessage)
+        dialogId = self.dialogService.createDialog(clientAddress, rawMessage)
+        request = self.dialogService.getLastMessage(dialogId)
+        if request.form == 'authority':
+            clientSocket.sendall(self.dialogService.makeEstablishedResponse(dialogId))
+            context = self.tlsService.createSslContext(request.host.decode())
+            secure = SSL.Connection(context, clientSocket)
+            secure.set_accept_state()
+            try:
+                secure.do_handshake()
+            except SSL.Error as v:
+                print("SSL handshake error: %s" % repr(v))
+                secure.close()
+            targetSocket = secure
+            # read application data request after handshake
+            postHandshakeRaw = self.read(targetSocket)
+            print(postHandshakeRaw)
+            finalRequest = self.dialogService.makeRequestFromRaw(postHandshakeRaw, dialogId)
         else:
             targetSocket = clientSocket
+            finalRequest = request
+        # now go to remote
+        method, url, kwargs = self.dialogService.preparePyRequestArgs(finalRequest, dialogId)
         # send request object to remote and receive into response object
+        # pyResponse
         # response = self.sendService.sendToRemote(requestDetails)
         
         # send response object to client
@@ -52,6 +70,20 @@ class Server:
         # close connection
         # self.closeSocket(targetSocket)
         targetSocket.close()
+
+    def read(self, sock):
+        rawMessage = b''
+        while True:
+            r, _, _ = select.select([sock], [], [], self.pollInterval)
+            if sock in r:
+                try:
+                    chunk = sock.recv(1024)
+                    rawMessage += chunk
+                except socket.error:
+                    break  # TODO construct exeption
+            else:
+                break
+        return rawMessage
 
     def closeSocket(self, sock):
         try:

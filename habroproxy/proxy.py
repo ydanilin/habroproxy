@@ -2,6 +2,7 @@ import os
 import socket
 import select
 import threading
+import requests
 from OpenSSL import SSL
 
 
@@ -61,8 +62,8 @@ class Server:
         method, url, kwargs = self.dialogService.preparePyRequestArgs(finalRequest, dialogId)
         # send request object to remote and receive into response object
         # pyResponse
-        # response = self.sendService.sendToRemote(requestDetails)
-        
+        response = requests.request(method, url, **kwargs)
+        print(response.headers)
         # send response object to client
         # sent = self.sendService.sendToClient(targetSocket, response)
         # print(f'Sent {sent} bytes')

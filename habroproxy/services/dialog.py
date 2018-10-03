@@ -11,6 +11,7 @@ class DialogService:
         request = self.makeRequestFromRaw(initialClientRaw, _id)
         dialog.remoteHost = request.host
         dialog.remotePort = request.port
+        dialog.scheme = 'https' if request.form == 'authority' else 'http'
         return _id
         # makeRequestFromRaw
         # extract host name
@@ -33,13 +34,13 @@ class DialogService:
         return request
 
     def preparePyRequestArgs(self, request, dialogId):
-        # TODO refactor in a way that dialog class grabs scheme, host, port asap from conversation flow
-        if request.form == 'relative':
-            pass
-        t = f'{self.scheme}://{self.host}:{self.port}{self.path}'
-        pass
-        # return method, url, kwargs
-        # headers dict, stream=True
+        dialog = self.dialogRepository[dialogId]
+        scheme = request.scheme.decode() if request.scheme else dialog.scheme
+        host = request.host.decode() if request.host else dialog.remoteHost.decode()
+        port = request.port if request.port else dialog.remotePort
+        url = f'{scheme}://{host}:{port}{request.path.decode()}'
+        decodedHeaders = dict(map(lambda x: (x[0], x[1].decode()), request.headers.items()))
+        return request.method.decode(), url, dict(headers=decodedHeaders, stream=True)
 
     def createPyResponseFormat(self):
         pass

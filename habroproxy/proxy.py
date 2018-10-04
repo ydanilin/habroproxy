@@ -58,14 +58,14 @@ class Server:
         else:
             targetSocket = clientSocket
             finalRequest = request
-        # now go to remote
-        method, url, kwargs = self.dialogService.preparePyRequestArgs(finalRequest, dialogId)
         # send request object to remote and receive into response object
-        # pyResponse
+        method, url, kwargs = self.dialogService.preparePyRequestArgs(finalRequest, dialogId)
         response = requests.request(method, url, **kwargs)
-        print(response.headers)
+        # print(response.content[:100])
         # send response object to client
-        # sent = self.sendService.sendToClient(targetSocket, response)
+        rawToClient = self.dialogService.makeRawFromPy(response, dialogId)
+        # print(rawToClient[:300])
+        targetSocket.sendall(rawToClient)
         # print(f'Sent {sent} bytes')
         
         # close connection

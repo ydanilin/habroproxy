@@ -1,7 +1,8 @@
 class DialogService:
-    def __init__(self, dialogClass, requestClass):
+    def __init__(self, dialogClass, requestClass, responseClass):
         self.dialogClass = dialogClass
         self.requestClass = requestClass
+        self.responseClass = responseClass
         self.dialogRepository = {}
 
     def createDialog(self, clientAddress, initialClientRaw):
@@ -45,8 +46,10 @@ class DialogService:
     def createPyResponseFormat(self):
         pass
 
-    def makeResponseFromRaw(self, raw, dialogId):
-        pass
+    def makeRawFromPy(self, pyResponse, dialogId):
+        response = self.responseClass.createFromPyResponse(pyResponse)
+        self.dialogRepository[dialogId].conversation.append(response)
+        return response.makeRaw()
 
     def makeEstablishedResponse(self, dialogId):
         req = self.getLastMessage(dialogId)

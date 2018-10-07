@@ -15,6 +15,12 @@ class TlsService:
         cert.set_issuer(self.ca.cacert.get_subject())
         cert.get_subject().CN = forDomain
         cert.set_serial_number(int(time.time() * 10000))
+        # cert.set_version(2)
+        # cert.add_extensions(
+        #     [OpenSSL.crypto.X509Extension(
+        #         b"subjectAltName", False, b"DNS:%s" % forDomain.encode()
+        #     )]
+        # )
         cert.set_pubkey(self.ca.cacert.get_pubkey())
         cert.sign(self.ca.privKey, "sha256")
         return cert

@@ -1,3 +1,5 @@
+from habroproxy.utils import prettyDict
+
 
 class Response:
     def __init__(self, **params):
@@ -7,6 +9,7 @@ class Response:
         self.headers = {}
         self.body = b''
         self.__dict__.update(params)
+        self.dialog = None
 
     @classmethod
     def createFromPyResponse(cls, response):
@@ -15,12 +18,14 @@ class Response:
         reason = response.reason
         # hdDict = response.headers._store.items()
         headers = response.headers
+        cookies = response.cookies
         body = response.raw.read()
         return cls(**dict(
             version=version,
             statusCode=statusCode,
             reason=reason,
             headers=headers,
+            cookies=cookies,
             body=body
             )
         )
@@ -34,3 +39,10 @@ class Response:
         else:
             passBody = self.body
         return b'%s\r\n%s\r\n\r\n%s' % (firstLine, headers, passBody)
+
+    def __str__(self):
+        remoteHost = self.dialog.remoteHost
+        port = self.dialog.clientPort
+        line = f'{self.version} {self.statusCode} {self.reason}'
+        headers = prettyDict(self.headers)
+        return f'resp from {remoteHost} for {port}: {line}\nheaders: {headers}\ncookies: {self.cookies}\nbody length: {len(self.body)}\n\n'

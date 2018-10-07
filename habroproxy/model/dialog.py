@@ -8,3 +8,7 @@ class Dialog:
         self.remoteHost = ''
         self.remotePort = 0
         self.conversation = []
+
+    def addToConversation(self, message):
+        message.dialog = self
+        self.conversation.append(message)

@@ -12,4 +12,4 @@ proxies = {
 # print(os.path.join(os.curdir, 'cert'))
 r = requests.get('https://habr.com/', proxies=proxies, verify=os.path.join(os.curdir, 'cert'))
 
-print(r.text)
+print(r.headers)

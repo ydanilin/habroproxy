@@ -11,7 +11,7 @@ def test_get_dialog_by_host():
     _id, dialog = service.getDialogByHost('habr.com')
     assert dialog is not None
     msg = service.getLastMessage(_id)
-    assert msg.host == b'habr.com'
+    assert msg.host == 'habr.com'
 
 
 def test_make_established_response():

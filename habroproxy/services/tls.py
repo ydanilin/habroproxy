@@ -15,15 +15,29 @@ class TlsService:
         cert.set_issuer(self.ca.cacert.get_subject())
         cert.get_subject().CN = forDomain
         cert.set_serial_number(int(time.time() * 10000))
+        # cert extensions
+        # but tests with browsers (Firefox Ubuntu, Windows) revealed
+        # that there are much less SSL hanshake errors with client
+        # when no subjectAltName extension enabled
+        # ---- commented out start
         # cert.set_version(2)
+        # asteriskForms = map(lambda x: b"DNS:%s" % x.encode(), self.getAsteriskForms(forDomain))
         # cert.add_extensions(
         #     [OpenSSL.crypto.X509Extension(
-        #         b"subjectAltName", False, b"DNS:%s" % forDomain.encode()
+        #         b"subjectAltName", False, b', '.join(asteriskForms)
         #     )]
         # )
+        # ---- commented out end
         cert.set_pubkey(self.ca.cacert.get_pubkey())
         cert.sign(self.ca.privKey, "sha256")
         return cert
+
+    def getAsteriskForms(self, forDomain):
+        parts = forDomain.split('.')
+        output = [forDomain]
+        for i in range(1, len(parts)):
+            output.append('*.' + '.'.join(parts[i:]))
+        return output
 
     def getPrivateKey(self):
         return self.ca.privKey

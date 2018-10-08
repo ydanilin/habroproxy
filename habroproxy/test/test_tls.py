@@ -12,3 +12,9 @@ def test_ssl_context():
     tservice = TlsService()
     ctx = tservice.createSslContext(requiredDomain)
     assert ctx.check_privatekey() == None
+
+def test_asterisk_forms():
+    requiredDomain = 'habr.com'
+    tservice = TlsService()
+    asteriskForms = tservice.getAsteriskForms(requiredDomain)
+    assert asteriskForms == ['habr.com', '*.com']

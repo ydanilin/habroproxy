@@ -33,7 +33,7 @@ class Server:
                 if self.socket in r:
                     clientSocket, clientAddress = self.socket.accept()
                     t = threading.Thread(target = self.handleConnection, args = (clientSocket, clientAddress) )
-                    t.run()
+                    t.start()  # t.run()
         except KeyboardInterrupt:
             if self.socket:
                 self.closeSocket(self.socket)

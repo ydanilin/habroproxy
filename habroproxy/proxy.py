@@ -42,10 +42,9 @@ class Server:
         # print(f'connection from {clientAddress}')
         rawMessage = self.read(clientSocket)
         if not rawMessage:
-            log.error(f'Empty request from {clientAddress[1]}, socket closed\n\n')
+            # log.error(f'Empty request from {clientAddress[1]}, socket closed\n\n')
             clientSocket.close()
             return
-        # print(rawMessage)
         dialogId = self.dialogService.createDialog(clientAddress, rawMessage)
         request = self.dialogService.getLastMessage(dialogId)
         if request.form == 'authority':
@@ -86,7 +85,7 @@ class Server:
         # close connection
         # self.closeSocket(targetSocket)
         dialog = self.dialogService.getDialogById(dialogId)
-        log.debug(f'closed connection for {dialog.clientPort}')
+        # log.debug(f'closed connection for {dialog.clientPort}')
         targetSocket.close()
 
     def read(self, sock):

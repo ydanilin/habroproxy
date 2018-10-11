@@ -1,7 +1,5 @@
-from io import BytesIO
-import gzip
 from bs4 import BeautifulSoup, NavigableString, Comment
-from habroproxy.utils import multiInsert
+from habroproxy.utils import multiInsert, absent, decodeZip, encodeZip
 
 
 compressors = [
@@ -28,25 +26,6 @@ compressors = [
 ]
 
 
-def absent():
-    raise NotImplementedError()
-
-
-def decodeZip(source):
-    if not source:
-        return b""
-    gfile = gzip.GzipFile(fileobj=BytesIO(source))
-    return gfile.read()
-
-
-def encodeZip(source):
-    s = BytesIO()
-    gf = gzip.GzipFile(fileobj=s, mode='wb')
-    gf.write(source)
-    gf.close()
-    return s.getvalue()
-
-
 class TMInterceptor:
     def __init__(self, host):
         self.host = host
@@ -58,6 +37,8 @@ class TMInterceptor:
         self.ignoredTags = ['script', 'code']
 
     def intercept(self, response):
+        if not response.body:
+            return
         willProcess = (response.getRemoteHost().find(self.host) > -1 and
             response.headers.get('Content-type').find(self.content_type) > -1)
         if not willProcess:

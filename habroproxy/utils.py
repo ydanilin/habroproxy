@@ -1,5 +1,7 @@
 import os
 from itertools import zip_longest, chain
+from io import BytesIO
+import gzip
 
 
 def iterPath(path, end=''):
@@ -85,3 +87,22 @@ def multiInsert(stri, what, condLen, special):
     zipBack = (modifiedWords, separs) if initialState == 'inside' else (separs, modifiedWords)
     reconstructed = chain(*zip_longest(*zipBack, fillvalue=''))
     return ''.join(reconstructed)
+
+
+def absent():
+    raise NotImplementedError()
+
+
+def decodeZip(source):
+    if not source:
+        return b""
+    gfile = gzip.GzipFile(fileobj=BytesIO(source))
+    return gfile.read()
+
+
+def encodeZip(source):
+    s = BytesIO()
+    gf = gzip.GzipFile(fileobj=s, mode='wb')
+    gf.write(source)
+    gf.close()
+    return s.getvalue()

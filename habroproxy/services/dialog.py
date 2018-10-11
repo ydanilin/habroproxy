@@ -20,7 +20,7 @@ class DialogService:
         dialog.remoteHost = request.host
         dialog.remotePort = request.port
         dialog.scheme = 'https' if request.form == 'authority' else 'http'
-        log.debug(request)
+        # log.debug(request)
         return _id
         # makeRequestFromRaw
         # extract host name
@@ -43,8 +43,8 @@ class DialogService:
     def makeRequestFromRaw(self, raw, dialogId):
         request = self.requestClass.createFromRaw(raw)
         self.dialogRepository[dialogId].addToConversation(request)
-        if request.form != 'authority':
-            log.debug(request)
+        # if request.form != 'authority':
+        #     log.debug(request)
         return request
 
     def preparePyRequestArgs(self, request, dialogId):
@@ -61,9 +61,10 @@ class DialogService:
     def makeRawFromPy(self, pyResponse, dialogId):
         response = self.responseClass.createFromPyResponse(pyResponse)
         self.dialogRepository[dialogId].addToConversation(response)
-        log.debug(response)
+        # log.debug(response)
         # intercept response
-        map(lambda x: x.intercept(response), self.interceptors)
+        # import pudb; pudb.set_trace()
+        t = list(map(lambda x: x.intercept(response), self.interceptors))
         return response.makeRaw()
 
     def makeEstablishedResponse(self, dialogId):

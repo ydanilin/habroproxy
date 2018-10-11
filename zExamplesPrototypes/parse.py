@@ -1,6 +1,6 @@
 import os
 from bs4 import BeautifulSoup
-from bs4 import NavigableString
+from bs4 import NavigableString, Comment
 from habroproxy.utils import multiInsert
 # *****************************************
 # to execute, do python -m zExamplesPrototypes.parse
@@ -9,8 +9,9 @@ from habroproxy.utils import multiInsert
 
 
 tm = b'\xE2\x84\xA2'.decode()
+special = '"()- !.,?[]{}_\n\r\t:;'
 
-ignoredTags = ['script']
+ignoredTags = ['script', 'code']
 # digits inside a word = ignore
 # \r\n in text start
 
@@ -34,11 +35,13 @@ if __name__ == '__main__':
         lambda x:
             isinstance(x, NavigableString)
             and x.parent.name not in ignoredTags
-            and x.strip() != '',
+            and x.strip() != ''
+            and not isinstance(x, Comment),
         soup.html.body.descendants
     )
 
-    fout = open(os.path.join(fullPath, 'lagr.txt'), 'wb')
-    for ns in navStrings:
-        fout.write(f'{ns.parent.name}: {repr(ns)}\n'.encode())
+    for ns in list(navStrings):
+        ns.replace_with(multiInsert(ns, tm, 6, special))
+    fout = open(os.path.join(fullPath, 'lagr.htm'), 'wb')
+    fout.write(soup.encode())
     fout.close()

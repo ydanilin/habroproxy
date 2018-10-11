@@ -7,6 +7,7 @@ class Response:
         self.statusCode = 0
         self.reason = ''
         self.headers = {}
+        self.cookies = None
         self.body = b''
         self.__dict__.update(params)
         self.dialog = None
@@ -39,6 +40,9 @@ class Response:
         else:
             passBody = self.body
         return b'%s\r\n%s\r\n\r\n%s' % (firstLine, headers, passBody)
+
+    def getRemoteHost(self):
+        return self.dialog.remoteHost
 
     def __str__(self):
         remoteHost = self.dialog.remoteHost

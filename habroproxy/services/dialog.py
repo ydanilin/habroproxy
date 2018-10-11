@@ -5,11 +5,12 @@ log = configure('dialog')
 
 
 class DialogService:
-    def __init__(self, dialogClass, requestClass, responseClass):
+    def __init__(self, dialogClass, requestClass, responseClass, interceptors=[]):
         self.dialogClass = dialogClass
         self.requestClass = requestClass
         self.responseClass = responseClass
         self.dialogRepository = {}
+        self.interceptors = interceptors
 
     def createDialog(self, clientAddress, initialClientRaw):
         dialog = self.dialogClass(clientAddress)
@@ -61,6 +62,8 @@ class DialogService:
         response = self.responseClass.createFromPyResponse(pyResponse)
         self.dialogRepository[dialogId].addToConversation(response)
         log.debug(response)
+        # intercept response
+        map(lambda x: x.intercept(response), self.interceptors)
         return response.makeRaw()
 
     def makeEstablishedResponse(self, dialogId):

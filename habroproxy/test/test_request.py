@@ -1,9 +1,11 @@
+""" Request object methods """
 from habroproxy.model.request import Request
 
 
 def test_create_connect():
+    """ parse CONNECT request """
     raw = b'CONNECT habr.com:443 HTTP/1.0\r\n\r\n'
-    req = Request.createFromRaw(raw)
+    req = Request.create_from_raw(raw)
     assert req.form == 'authority'
     assert req.method == 'CONNECT'
     assert req.scheme == ''
@@ -16,8 +18,10 @@ def test_create_connect():
 
 
 def test_create_relative():
+    """ parse relative request """
+    # pylint: disable=line-too-long
     raw = b'GET / HTTP/1.1\r\nHost: habr.com\r\nUser-Agent: python-requests/2.19.1\r\nAccept-Encoding: gzip, deflate\r\nAccept: */*\r\nConnection: keep-alive\r\n\r\n'
-    req = Request.createFromRaw(raw)
+    req = Request.create_from_raw(raw)
     assert req.form == 'relative'
     assert req.method == 'GET'
     assert req.scheme == ''
@@ -36,8 +40,10 @@ def test_create_relative():
 
 
 def test_create_absolute():
+    """ parse absolute request """
+    # pylint: disable=line-too-long
     raw = b'GET http://www.rgbagira.ru/ HTTP/1.1\r\nHost: www.rgbagira.ru\r\nUser-Agent: python-requests/2.19.1\r\nAccept-Encoding: gzip, deflate\r\nAccept: */*\r\nConnection: keep-alive\r\n\r\n'
-    req = Request.createFromRaw(raw)
+    req = Request.create_from_raw(raw)
     assert req.form == 'absolute'
     assert req.method == 'GET'
     assert req.scheme == 'http'

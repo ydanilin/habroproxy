@@ -1,4 +1,4 @@
-import os
+""" main proxy server application """
 import socket
 import select
 import threading
@@ -7,18 +7,23 @@ from OpenSSL import SSL
 from .lib.logger import configure
 
 
-log = configure('dialog')
+LOG = configure('dialog')
 
 
 class Server:
-    def __init__(self, address, dialogService, tlsService):
+    """
+    server class.
+    address: address to bind, tuple (host, port). host typically is ''
+    """
+    def __init__(self, address, dialog_service, tls_service):
         self.address = address
-        self.dialogService = dialogService
-        self.tlsService = tlsService
+        self.dialog_service = dialog_service
+        self.tls_service = tls_service
         self.socket = None
-        self.pollInterval = 0.1
+        self.poll_interval = 0.1
 
     def start(self):
+        """ binds and listens """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
@@ -26,104 +31,91 @@ class Server:
         self.socket.listen()
         print(f"Habroproxy server is listening to '{self.address[0]}': {self.address[1]}")
 
-    def serveForever(self, pollInterval=0.1):
+    def serve_forever(self, poll_interval=0.1):
+        """ endless loop with select """
         try:
             while True:
-                r, _, _ = select.select([self.socket], [], [], pollInterval)
-                if self.socket in r:
-                    clientSocket, clientAddress = self.socket.accept()
-                    t = threading.Thread(target = self.handleConnection, args = (clientSocket, clientAddress) )
-                    t.start()
+                read_sock, _, _ = select.select([self.socket], [], [], poll_interval)
+                if self.socket in read_sock:
+                    client_socket, client_address = self.socket.accept()
+                    thread = threading.Thread(
+                        target=self.handle_connection, args=(client_socket, client_address)
+                    )
+                    thread.start()
         except KeyboardInterrupt:
             if self.socket:
-                self.closeSocket(self.socket)
+                self.socket.close()
 
-    def handleConnection(self, clientSocket, clientAddress):
-        # print(f'connection from {clientAddress}')
-        rawMessage = self.read(clientSocket)
-        if not rawMessage:
-            # log.error(f'Empty request from {clientAddress[1]}, socket closed\n\n')
-            clientSocket.close()
+    def handle_connection(self, client_socket, client_address):
+        """ performs main workflow. callback to be executed by thread """
+        # print(f'connection from {client_address}')
+        raw_message = read(client_socket)
+        if not raw_message:
+            # LOG.error(f'Empty request from {client_address[1]}, socket closed\n\n')
+            client_socket.close()
             return
-        dialogId = self.dialogService.createDialog(clientAddress, rawMessage)
-        request = self.dialogService.getLastMessage(dialogId)
+        dialog_id = self.dialog_service.create_dialog(client_address, raw_message)
+        request = self.dialog_service.get_last_message(dialog_id)
         if request.form == 'authority':
-            clientSocket.sendall(self.dialogService.makeEstablishedResponse(dialogId))
-            context = self.tlsService.createSslContext(request.host)
-            secure = SSL.Connection(context, clientSocket)
-            secure.set_accept_state()
             try:
-                secure.do_handshake()
-            except SSL.Error as v:
-                log.error(f"SSL handshake error for {clientAddress[1]}: {repr(v)}")
-                secure.close()
+                target_socket, final_request = self.handle_secure_connection(
+                    client_socket, request, dialog_id
+                )
+            except SSL.Error as err:
+                LOG.error(f"SSL handshake error for {client_address[1]}: {repr(err)}")
                 return
-            targetSocket = secure
-            # read application data request after handshake
-            postHandshakeRaw = self.read(targetSocket)
-            # print(postHandshakeRaw)
-            finalRequest = self.dialogService.makeRequestFromRaw(postHandshakeRaw, dialogId)
         else:
-            targetSocket = clientSocket
-            finalRequest = request
+            target_socket = client_socket
+            final_request = request
         # send request object to remote and receive into response object
-        method, url, kwargs = self.dialogService.preparePyRequestArgs(finalRequest, dialogId)
+        method, url, kwargs = self.dialog_service.prepare_py_request_args(final_request)
         kwargs['allow_redirects'] = False
-        # kwargs['proxies'] = {
-        # 'http': 'localhost:8082',
-        # 'https': 'localhost:8082',
-        # }
-        # kwargs['verify'] = '/home/yury/.mitmproxy'
         response = requests.request(method, url, **kwargs)
-        # print(response.content[:100])
         # send response object to client
-        rawToClient = self.dialogService.makeRawFromPy(response, dialogId)
-        # print(rawToClient[:300])
-        targetSocket.sendall(rawToClient)
-        # print(f'Sent {sent} bytes')
-        
-        # close connection
-        # self.closeSocket(targetSocket)
-        dialog = self.dialogService.getDialogById(dialogId)
-        # log.debug(f'closed connection for {dialog.clientPort}')
-        targetSocket.close()
-
-    def read(self, sock):
-        # TODO perhaps we need to read byte by byte as explained here:
-        # https://stackoverflow.com/questions/23056805/how-to-continuously-read-data-from-socket-in-python
-        rawMessage = b''
-        while True:
-            try:
-                chunk = sock.recv(4096)
-            except socket.error as e:
-                print('Socket error: ', str(e))
-                break
-            if not chunk:
-                break
-            rawMessage += chunk
-            if len(chunk) < 4096:  # dirty, refactor
-                break
-        # while True:
-        #     r, _, _ = select.select([sock], [], [], self.pollInterval)
-        #     if sock in r:
-        #         try:
-        #             chunk = sock.recv(1024)
-        #             rawMessage += chunk
-        #         except socket.error:
-        #             break  # TODO construct exeption
-        #     else:
-        #         break
-        return rawMessage
-
-    def closeSocket(self, sock):
+        raw_to_client = self.dialog_service.make_raw_from_py(response, dialog_id)
+        # print(raw_to_client[:300])
         try:
-            sock.shutdown(socket.SHUT_WR)
-            if os.name == "nt":
-                sock.settimeout(sock.gettimeout() or 20)
-                for _ in range(1024 ** 3 // 4096):
-                    if not sock.recv(4096):
-                        break
-            sock.shutdown(socket.SHUT_RD)
-        except socket.error:
-            pass
-        sock.close()
+            target_socket.sendall(raw_to_client)
+        except SSL.Error as err:
+            LOG.error(f"SSL write to client socket error for {client_address[1]}: {repr(err)}")
+        # LOG.debug(f'closed connection for {dialog.clientPort}')
+        target_socket.close()
+
+    def handle_secure_connection(self, client_socket, request, dialog_id):
+        """ performs all TLS stuff with client
+            returns (wrapped secure_socket socket, client request after CONNECT)
+        """
+        client_socket.sendall(self.dialog_service.make_established_response(dialog_id))
+        context = self.tls_service.create_ssl_context(request.host)
+        secure_socket = SSL.Connection(context, client_socket)
+        secure_socket.set_accept_state()
+        try:
+            secure_socket.do_handshake()
+        except SSL.Error as err:
+            secure_socket.close()
+            raise SSL.Error(err)
+            # return secure_socket, None
+        # read application data request after handshake
+        post_handshake_raw = read(secure_socket)
+        final_request = self.dialog_service.make_request_from_raw(post_handshake_raw, dialog_id)
+        return secure_socket, final_request
+
+def read(sock):
+    """
+        traditional read from a socket
+        maybe need this:
+        https://stackoverflow.com/questions/23056805/how-to-continuously-read-data-from-socket-in-python
+    """
+    raw_message = b''
+    while True:
+        try:
+            chunk = sock.recv(4096)
+        except socket.error as err:
+            print('Socket error: ', str(err))
+            break
+        if not chunk:
+            break
+        raw_message += chunk
+        if len(chunk) < 4096:  # dirty, refactor
+            break
+    return raw_message

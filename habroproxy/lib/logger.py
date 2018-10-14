@@ -1,22 +1,24 @@
+""" standard libraries configuration module """
 import os
 import logging
-from habroproxy.utils import getLogPath
+from habroproxy.utils import get_log_path
 
 
 # logging.basicConfig(level=logging.DEBUG)
 
 
-def configure(moduleName):
-    log = logging.getLogger(moduleName)
+def configure(module_name):
+    """ configure logging """
+    log = logging.getLogger(module_name)
     log.setLevel(logging.DEBUG)
-    logPath = getLogPath()
-    if not os.path.exists(logPath):
-        os.makedirs(logPath)
-    fileName = os.path.join(logPath, f'{moduleName}.log')
-    fh = logging.FileHandler(fileName, mode='w')
-    fh.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    log.addHandler(fh)
-    log.addHandler(ch)
+    log_path = get_log_path()
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+    file_name = os.path.join(log_path, f'{module_name}.log')
+    f_handler = logging.FileHandler(file_name, mode='w')
+    f_handler.setLevel(logging.DEBUG)
+    s_handler = logging.StreamHandler()
+    s_handler.setLevel(logging.DEBUG)
+    log.addHandler(f_handler)
+    log.addHandler(s_handler)
     return log

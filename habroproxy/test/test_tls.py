@@ -1,20 +1,25 @@
-from habroproxy.services.tls import TlsService
+""" few methods to test cert using OpenSSL methods """
+from habroproxy.services.tls import TlsService, get_asterisks_forms
+
+
+REQUIRED_DOMAIN = 'habr.com'
 
 
 def test_domain_cert():
-    requiredDomain = 'habr.com'
+    """ dummy cert CN must be required domain """
     tservice = TlsService()
-    cert = tservice.makeDomainCert(requiredDomain)
-    assert cert.get_subject().CN == requiredDomain
+    cert = tservice.make_domain_cert(REQUIRED_DOMAIN)
+    assert cert.get_subject().CN == REQUIRED_DOMAIN
+
 
 def test_ssl_context():
-    requiredDomain = 'habr.com'
+    """ private key checking must return None """
     tservice = TlsService()
-    ctx = tservice.createSslContext(requiredDomain)
-    assert ctx.check_privatekey() == None
+    ctx = tservice.create_ssl_context(REQUIRED_DOMAIN)
+    assert ctx.check_privatekey() is None
+
 
 def test_asterisk_forms():
-    requiredDomain = 'habr.com'
-    tservice = TlsService()
-    asteriskForms = tservice.getAsteriskForms(requiredDomain)
-    assert asteriskForms == ['habr.com', '*.com']
+    """ for subject alt name extension """
+    asterisk_forms = get_asterisks_forms(REQUIRED_DOMAIN)
+    assert asterisk_forms == ['habr.com', '*.com']

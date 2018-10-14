@@ -1,11 +1,17 @@
+""" functions to parse various raw http text parts """
 import urllib.parse
 from collections import OrderedDict
 from functools import reduce
 
 def lsep():
+    """
+        As per standard, http protocol messages should use \r\n as separator
+        Left as separate function for possible compatibility issues
+    """
     return b'\r\n'
 
 def parse(path):
+    """ parses request line for scheme, host, port, full_path """
     parsed = urllib.parse.urlparse(path)
     scheme = parsed.scheme
     host = parsed.hostname
@@ -21,9 +27,9 @@ def parse(path):
     return scheme, host, port, full_path
 
 
-def readRequestLine(line):
+def read_request_line(line):
     """
-    return form, method, scheme, host, port, path, http_version
+        return form, method, scheme, host, port, path, http_version
     """
     method, path, http_version = line.decode().split()
 
@@ -37,7 +43,7 @@ def readRequestLine(line):
             path=path,
             http_version=http_version
             )
-    elif method == "CONNECT":
+    if method == "CONNECT":
         host, port = path.rsplit(":", 1)
         return dict(
             form='authority',
@@ -48,21 +54,22 @@ def readRequestLine(line):
             # path=None,
             http_version=http_version
             )
-    else:
-        scheme, host, port, path = parse(path)
-        return dict(
-            form='absolute',
-            method=method,
-            scheme=scheme,
-            host=host,
-            port=port,
-            path=path,
-            http_version=http_version
-            )
+    scheme, host, port, path = parse(path)
+    return dict(
+        form='absolute',
+        method=method,
+        scheme=scheme,
+        host=host,
+        port=port,
+        path=path,
+        http_version=http_version
+        )
 
 
-def readHeaders(hlist):
-    def f(acc, line):
+def read_headers(hlist):
+    """ simple headers extraction procedure """
+    def f(acc, line):  # pylint: disable=invalid-name
+        """ For reduce. We miss arrow functions in Python... """
         name, value = line.split(b":", 1)
         acc[name.decode()] = value.decode().strip()
         return acc

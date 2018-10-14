@@ -1,3 +1,6 @@
+"""
+    Habroproxy bootstrap procedure
+"""
 from .model.dialog import Dialog
 from .model.request import Request
 from .model.response import Response
@@ -8,9 +11,12 @@ from .proxy import Server
 
 
 def run():
-    tmInterceptor = TMInterceptor('habr.com')
-    dialogService = DialogService(Dialog, Request, Response, [tmInterceptor])
-    tlsService = TlsService()
-    server = Server(('', 8080), dialogService, tlsService)
+    """
+        Habroproxy bootstrap procedure. Creates all service dependencies and inject them
+    """
+    tm_interceptor = TMInterceptor('habr.com')
+    dialog_service = DialogService(Dialog, Request, Response, [tm_interceptor])
+    tls_service = TlsService()
+    server = Server(('', 8080), dialog_service, tls_service)
     server.start()
-    server.serveForever()
+    server.serve_forever()

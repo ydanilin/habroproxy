@@ -28,12 +28,6 @@ class DialogService:
         dialog.scheme = 'https' if request.form == 'authority' else 'http'
         # LOGGER.debug(request)
         return _id
-        # makeRequestFromRaw
-        # extract host name
-        # check dialog repository and return if exists
-        # otherwise create new one
-        # add initial request
-        # return dialog id
 
     def get_dialog_by_host(self, host_name):
         """ Scans repository of dialogs to get by host name """

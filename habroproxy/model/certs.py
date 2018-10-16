@@ -22,15 +22,20 @@ def load_dhparam(path):
 class CertificateAgency:
     """
         loads agency certificate from <proj>/cert directory.
-        a certificate file should be created prior tu usage via
+        a certificate file should be created prior to usage via
         /tools/gencert.py module. More information is in project readme
     """
     def __init__(self, ca_path):
         self.basename = 'habroproxy'
         self.ca_path = ca_path
         self.ca_file = os.path.join(self.ca_path, self.basename + '-ca.pem')
-        with open(self.ca_file, "rb") as cafile:
-            raw = cafile.read()
+        try:
+            with open(self.ca_file, "rb") as cafile:
+                raw = cafile.read()
+        except FileNotFoundError:
+            # pylint: disable=line-too-long
+            print(f'No certificate {self.ca_file} found. Did you generate it via /tools/gencert.py?')
+            sys.exit(1)
         self.cacert = OpenSSL.crypto.load_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
             raw)

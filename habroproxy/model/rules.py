@@ -84,7 +84,7 @@ class TMInterceptor:
             - finds all leafs with pure text inside <body> tag
             - replaces that text with multi_insert processor output
         """
-        soup = BeautifulSoup(content.decode('utf-8'), 'lxml')
+        soup = BeautifulSoup(content.decode('utf-8'), 'html5lib')
         nav_strings = filter(
             lambda x:
             isinstance(x, NavigableString)

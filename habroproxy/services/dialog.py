@@ -60,7 +60,7 @@ class DialogService:
         """ Raw http string from requests library response """
         response = self.response_class.create_from_py_response(py_response)
         self.dialog_repository[dialog_id].add_to_conversation(response)
-        # LOGGER.debug(response)
+        LOGGER.info(response)
         # intercept response
         list(map(lambda x: x.intercept(response), self.interceptors))
         return response.make_raw()

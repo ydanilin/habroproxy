@@ -29,7 +29,7 @@ class Server:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self.socket.bind(self.address)
         self.socket.listen()
-        print(f"Habroproxy server is listening to '{self.address[0]}': {self.address[1]}")
+        LOG.info(f"Habroproxy server is listening to '{self.address[0]}': {self.address[1]}")
 
     def serve_forever(self, poll_interval=0.1):
         """ endless loop with select """
@@ -48,10 +48,9 @@ class Server:
 
     def handle_connection(self, client_socket, client_address):
         """ performs main workflow. callback to be executed by thread """
-        # print(f'connection from {client_address}')
         raw_message = read(client_socket)
         if not raw_message:
-            # LOG.error(f'Empty request from {client_address[1]}, socket closed\n\n')
+            LOG.debug(f'Empty request from {client_address[1]}, socket closed\n\n')
             client_socket.close()
             return
         dialog_id = self.dialog_service.create_dialog(client_address, raw_message)
@@ -62,23 +61,22 @@ class Server:
                     client_socket, request, dialog_id
                 )
             except SSL.Error as err:
-                LOG.error(f"SSL handshake error for {client_address[1]}: {repr(err)}")
+                LOG.debug(f"SSL handshake error for {client_address[1]}: {repr(err)}")
                 return
         else:
             target_socket = client_socket
             final_request = request
+        LOG.info(final_request)
         # send request object to remote and receive into response object
         method, url, kwargs = self.dialog_service.prepare_py_request_args(final_request)
         kwargs['allow_redirects'] = False
         response = requests.request(method, url, **kwargs)
         # send response object to client
         raw_to_client = self.dialog_service.make_raw_from_py(response, dialog_id)
-        # print(raw_to_client[:300])
         try:
             target_socket.sendall(raw_to_client)
         except SSL.Error as err:
-            LOG.error(f"SSL write to client socket error for {client_address[1]}: {repr(err)}")
-        # LOG.debug(f'closed connection for {dialog.clientPort}')
+            LOG.debug(f"SSL write to client socket error for {client_address[1]}: {repr(err)}")
         target_socket.close()
 
     def handle_secure_connection(self, client_socket, request, dialog_id):

@@ -60,8 +60,9 @@ class Response:
 
     def __str__(self):
         remote_host = self.get_remote_host()
-        port = self.dialog.clientPort
+        port = self.dialog.client_port
         line = f'{self.version} {self.status_code} {self.reason}'
-        headers = pretty_dict(self.headers)
+        # headers = pretty_dict(self.headers)
         # pylint: disable=line-too-long
-        return f'resp from {remote_host} for {port}: {line}\nheaders: {headers}\ncookies: {self.cookies}\nbody length: {len(self.body)}\n\n'
+        # return f'resp from {remote_host} for {port}: {line}\nheaders: {headers}\ncookies: {self.cookies}\nbody length: {len(self.body)}\n\n'
+        return f'resp from {remote_host} for {port}: {line}\n'

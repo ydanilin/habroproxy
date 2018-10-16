@@ -25,32 +25,6 @@ rD693XKIHUCWOjMh1if6omGXKHH40QuME2gNa50+YPn1iYDl88uDbbMCAQI=
 -----END DH PARAMETERS-----
 """
 
-BASENAME = 'habroproxy'
-ORG = 'Habroproxy Ltd.'
-CA_PATH = os.path.join(os.curdir, 'cert')
-NEEDED_CERTS = [
-    {
-        'msg': 'created CA PLUS private key file (to be used internally)',
-        'path_name': os.path.join(CA_PATH, BASENAME + "-ca.pem"),
-        'saveProc': save_ca_pub_key,
-    },
-    {
-        'msg': 'created certificate file to install in clients',
-        'path_name': os.path.join(CA_PATH, BASENAME + "-ca-cert.pem"),
-        'saveProc': save_cert,
-    },
-    {
-        'msg': 'created certificate file for Windows system store',
-        'path_name': os.path.join(CA_PATH, BASENAME + "-ca-cert.p12"),
-        'saveProc': save_win_cert,
-    },
-    {
-        'msg': 'created Diffie-Hellman parameters file',
-        'path_name': os.path.join(CA_PATH, BASENAME + "-dhparam.pem"),
-        'saveProc': save_dh_params,
-    },
-]
-
 
 def create_ca(organization, common_name, expiration):
     """
@@ -138,6 +112,33 @@ def save_dh_params(path_name, msg, **cakey):  # pylint: disable=unused-argument
     with open(path_name, "wb") as f_handler:
         f_handler.write(DEFAULT_DHPARAM)
         print(f'{msg}: {f_handler.name}')
+
+
+BASENAME = 'habroproxy'
+ORG = 'Habroproxy Ltd.'
+CA_PATH = os.path.join(os.curdir, 'cert')
+NEEDED_CERTS = [
+    {
+        'msg': 'created CA PLUS private key file (to be used internally)',
+        'path_name': os.path.join(CA_PATH, BASENAME + "-ca.pem"),
+        'saveProc': save_ca_pub_key,
+    },
+    {
+        'msg': 'created certificate file to install in clients',
+        'path_name': os.path.join(CA_PATH, BASENAME + "-ca-cert.pem"),
+        'saveProc': save_cert,
+    },
+    {
+        'msg': 'created certificate file for Windows system store',
+        'path_name': os.path.join(CA_PATH, BASENAME + "-ca-cert.p12"),
+        'saveProc': save_win_cert,
+    },
+    {
+        'msg': 'created Diffie-Hellman parameters file',
+        'path_name': os.path.join(CA_PATH, BASENAME + "-dhparam.pem"),
+        'saveProc': save_dh_params,
+    },
+]
 
 
 if __name__ == '__main__':

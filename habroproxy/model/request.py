@@ -44,7 +44,8 @@ class Request:  # pylint: disable=too-many-instance-attributes
         return f'{scheme}://{host}:{port}{self.path}'
 
     def __str__(self):
-        port = self.dialog.clientPort
+        port = self.dialog.client_port
         line = f'{self.method} {self.get_full_url()} {self.http_version}'
-        headers = pretty_dict(self.headers)
-        return f'req from {port}: {line}\nheaders: {headers}\nbody: {self.body.decode()}\n\n'
+        # headers = pretty_dict(self.headers)
+        # return f'req from {port}: {line}\nheaders: {headers}\nbody: {self.body.decode()}\n\n'
+        return f'req from {port}: {line}\nbody: {self.body.decode()}\n'

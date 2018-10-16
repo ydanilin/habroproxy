@@ -3,7 +3,7 @@ main:
 clnt:
 	python client.py
 gencert:
-	python gencert.py
+	python habroproxy/tools/gencert.py
 test:
 	pytest
 t:

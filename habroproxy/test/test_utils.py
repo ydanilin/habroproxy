@@ -1,16 +1,5 @@
 """ Test utility functions from utils.py """
-import os
-from habroproxy.utils import get_cert_path, str_has_digits, multi_insert
-
-
-def test_cert_path():
-    """
-        If this test fails, that means user did not create certificate files.
-        TLS service tests will also fall in this case.
-        Create the certificates using /tools/gencert.py
-    """
-    path = get_cert_path()
-    assert os.path.exists(os.path.join(path, 'habroproxy-ca.pem')), True
+from habroproxy.utils import str_has_digits, multi_insert
 
 
 def test_str_has_digits():

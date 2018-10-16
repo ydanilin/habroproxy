@@ -1,5 +1,5 @@
 """ remote response entity """
-from habroproxy.utils import pretty_dict
+# from habroproxy.utils import pretty_dict
 
 
 class Response:

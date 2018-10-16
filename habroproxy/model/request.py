@@ -1,6 +1,6 @@
 """ client request entity """
 from habroproxy.read import lsep, read_request_line, read_headers
-from habroproxy.utils import pretty_dict
+# from habroproxy.utils import pretty_dict
 
 
 class Request:  # pylint: disable=too-many-instance-attributes

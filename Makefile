@@ -3,6 +3,8 @@ install:
 lint:
 	pylint ./habroproxy
 test:
+	pytest --ignore=habroproxy/test/test_tls.py
+fulltest:
 	pytest
 run:
 	python run.py
